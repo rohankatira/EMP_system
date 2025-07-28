@@ -9,12 +9,14 @@ let tasks = [];
 let nextEmpId = 1;
 let nextTaskId = 1;
 
-// Middleware & View Engine
+// Middleware
 app.set('view engine', 'ejs');
 app.use(express.static('public'));
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Homepage - List Employees
+// ------------------ Home ------------------
+
+// List Employees
 app.get('/', (req, res) => {
   const q = req.query.q?.toLowerCase() || '';
   const filtered = employees.filter(emp =>
@@ -26,28 +28,28 @@ app.get('/', (req, res) => {
 
 // ------------------ Employee Routes ------------------
 
-// Show Add Employee form
+// Show Add Employee Form
 app.get('/add', (req, res) => {
   res.render('add');
 });
 
-// Add employee
+// Add Employee
 app.post('/add', (req, res) => {
   const { name, department, salary } = req.body;
-  if (!name || !department || !salary) return res.send('All fields are required.');
+  if (!name || !department || !salary) return res.send('All fields required.');
   const id = String(nextEmpId++);
   employees.push({ id, name, department, salary });
   res.redirect('/');
 });
 
-// Show Edit form
+// Show Edit Employee Form
 app.get('/edit/:id', (req, res) => {
   const emp = employees.find(e => e.id === req.params.id);
   if (!emp) return res.send('Employee not found.');
   res.render('edit', { emp });
 });
 
-// Update employee
+// Edit Employee
 app.post('/edit/:id', (req, res) => {
   const { name, department, salary } = req.body;
   const emp = employees.find(e => e.id === req.params.id);
@@ -59,16 +61,16 @@ app.post('/edit/:id', (req, res) => {
   res.redirect('/');
 });
 
-// Delete employee
+// Delete Employee
 app.post('/delete/:id', (req, res) => {
   employees = employees.filter(e => e.id !== req.params.id);
-  tasks = tasks.filter(t => t.employeeId !== req.params.id); // delete related tasks
+  tasks = tasks.filter(t => t.employeeId !== req.params.id); // also delete related tasks
   res.redirect('/');
 });
 
 // ------------------ Task Routes ------------------
 
-// View all tasks
+// List Tasks
 app.get('/tasks', (req, res) => {
   const enrichedTasks = tasks.map(task => {
     const emp = employees.find(e => e.id === task.employeeId);
@@ -92,7 +94,8 @@ app.post('/tasks/add', (req, res) => {
     title,
     employeeId,
     employeeName: employee.name,
-    status: 'Pending'
+    status: 'Pending',
+    description: ''
   };
   tasks.push(task);
   res.redirect('/tasks');
@@ -105,7 +108,7 @@ app.get('/tasks/edit/:id', (req, res) => {
   res.render('editTask', { task, employees });
 });
 
-// Handle Task Edit
+// Edit Task
 app.post('/tasks/edit/:id', (req, res) => {
   const { title, employeeId, status } = req.body;
   const task = tasks.find(t => t.id === req.params.id);
@@ -118,21 +121,41 @@ app.post('/tasks/edit/:id', (req, res) => {
   res.redirect('/tasks');
 });
 
-// Mark Task as Completed
-app.post('/tasks/complete/:id', (req, res) => {
-  const task = tasks.find(t => t.id === req.params.id);
-  if (task) task.status = 'Completed';
-  res.redirect('/tasks');
-});
-
 // Delete Task
 app.post('/tasks/delete/:id', (req, res) => {
   tasks = tasks.filter(t => t.id !== req.params.id);
   res.redirect('/tasks');
 });
 
-// ------------------ Start Server ------------------
+// Mark as Completed
+app.post('/tasks/complete/:id', (req, res) => {
+  const task = tasks.find(t => t.id === req.params.id);
+  if (task) task.status = 'Completed';
+  res.redirect('/tasks');
+});
+
+// ------------------ Employee Task Submission ------------------
+
+// Show Submit Task Form
+app.get('/tasks/submit/:id', (req, res) => {
+  const task = tasks.find(t => t.id === req.params.id);
+  if (!task) return res.send('Task not found');
+  res.render('submitTask', { task });
+});
+
+// Handle Submit Task
+app.post('/tasks/submit/:id', (req, res) => {
+  const { description, status } = req.body;
+  const task = tasks.find(t => t.id === req.params.id);
+  if (task) {
+    task.description = description;
+    task.status = status;
+  }
+  res.redirect('/tasks');
+});
+
+// ------------------ Server ------------------
 
 app.listen(port, () => {
-  console.log(`🚀 Server running at http://localhost:${port}`);
+  console.log(` Server running at http://localhost:${port}`);
 });

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>All Tasks</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Bootstrap CSS CDN -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+  <!-- Bootstrap Icons CDN -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
+    rel="stylesheet"
+  />
+  <style>
+    body {
+      background-color: #f8f9fa;
+      padding: 2rem 1rem;
+    }
+    .card {
+      border-radius: 1rem;
+      box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+      max-width: 900px;
+      margin: auto;
+    }
+    h1 i {
+      margin-right: 0.5rem;
+      color: #0d6efd; /* Bootstrap primary */
+    }
+    .btn-back,
+    .btn-add {
+      margin-right: 0.75rem;
+    }
+    @media (max-width: 576px) {
+      .action-btns > * {
+        margin-bottom: 0.25rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card p-4">
+      <h1 class="mb-4 text-primary fw-bold">
+        <i class="bi bi-kanban-fill"></i> All Tasks
+      </h1>
+
+      <div class="mb-3">
+        <a href="/tasks/add" class="btn btn-success btn-add">
+          <i class="bi bi-plus-circle"></i> Add Task
+        </a>
+        <a href="/" class="btn btn-outline-primary btn-back">
+          <i class="bi bi-arrow-left-circle"></i> Back to Employees
+        </a>
+      </div>
+
+      <% if (tasks.length === 0) { %>
+        <div class="alert alert-warning d-flex align-items-center gap-2" role="alert">
+          <i class="bi bi-exclamation-triangle-fill fs-4"></i>
+          No tasks available.
+        </div>
+      <% } else { %>
+        <div class="table-responsive">
+          <table class="table table-bordered table-striped table-hover align-middle text-nowrap">
+            <thead class="table-dark">
+              <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Employee</th>
+                <th>Status</th>
+                <th class="text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% tasks.forEach(task => { %>
+                <tr>
+                  <td><%= task.id %></td>
+                  <td><%= task.title %></td>
+                  <td><%= task.employeeName %></td>
+                  <td>
+                    <% if (task.status === 'Completed') { %>
+                      <span class="badge bg-success">
+                        <i class="bi bi-check-circle me-1"></i> Completed
+                      </span>
+                    <% } else { %>
+                      <span class="badge bg-warning text-dark">
+                        <i class="bi bi-hourglass-split me-1"></i> <%= task.status %>
+                      </span>
+                    <% } %>
+                  </td>
+                  <td class="text-center action-btns">
+                    <% if (task.status !== 'Completed') { %>
+                      <form
+                        action="/tasks/complete/<%= task.id %>"
+                        method="POST"
+                        class="d-inline me-1"
+                        onsubmit="return confirm('Mark this task as completed?');"
+                      >
+                        <button type="submit" class="btn btn-sm btn-success" data-bs-toggle="tooltip" title="Complete Task">
+                          <i class="bi bi-check2-square"></i>
+                        </button>
+                      </form>
+                    <% } else { %>
+                      <span class="text-success fw-bold me-2">✅</span>
+                    <% } %>
+
+                    <a
+                      href="/tasks/edit/<%= task.id %>"
+                      class="btn btn-sm btn-outline-secondary me-1"
+                      data-bs-toggle="tooltip"
+                      title="Edit Task"
+                    >
+                      <i class="bi bi-pencil-square"></i>
+                    </a>
+
+                    <form
+                      action="/tasks/delete/<%= task.id %>"
+                      method="POST"
+                      class="d-inline"
+                      onsubmit="return confirm('Delete this task?');"
+                    >
+                      <button type="submit" class="btn btn-sm btn-outline-danger" data-bs-toggle="tooltip" title="Delete Task">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // Initialize Bootstrap tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.forEach(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+  </script>
+</body>
+</html>
